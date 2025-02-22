@@ -7,7 +7,7 @@ function App() {
 
   return (
     <>
-      npm list react
+      
 
 
       
