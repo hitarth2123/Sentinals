@@ -87,7 +87,89 @@ export function removeKeysFromQuery({ params, keysToRemove }: RemoveUrlQueryPara
   )
 }
 
-export const handleError = (error: unknown) => {
-  console.error(error)
-  throw new Error(typeof error === 'string' ? error : JSON.stringify(error))
+// Define error types
+export type ErrorResponse = {
+  message: string;
+  type: 'SERVER_ERROR' | 'CLIENT_ERROR' | 'VALIDATION_ERROR' | 'UNKNOWN_ERROR';
+  status?: number;
+  details?: unknown;
 }
+
+// Function to check if an object is an API error response
+export const isApiError = (error: unknown): error is { message: string; status: number } => {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    'status' in error
+  );
+}
+
+export const handleError = (error: unknown): ErrorResponse => {
+  // Log the original error for debugging
+  console.error('Original error:', error);
+
+  let errorResponse: ErrorResponse = {
+    message: 'An unexpected error occurred',
+    type: 'UNKNOWN_ERROR',
+    details: error
+  };
+
+  if (error instanceof Response) {
+    errorResponse = {
+      message: `Server error: ${error.status} ${error.statusText}`,
+      type: 'SERVER_ERROR',
+      status: error.status,
+      details: error
+    };
+  } else if (isApiError(error)) {
+    errorResponse = {
+      message: error.message,
+      type: error.status >= 500 ? 'SERVER_ERROR' : 'CLIENT_ERROR',
+      status: error.status,
+      details: error
+    };
+  } else if (error instanceof Error) {
+    errorResponse = {
+      message: error.message,
+      type: 'CLIENT_ERROR',
+      details: error
+    };
+  } else if (typeof error === 'string') {
+    errorResponse = {
+      message: error,
+      type: 'CLIENT_ERROR',
+      details: error
+    };
+  } else if (error && typeof error === 'object') {
+    try {
+      errorResponse = {
+        message: JSON.stringify(error),
+        type: 'UNKNOWN_ERROR',
+        details: error
+      };
+    } catch {
+      errorResponse = {
+        message: 'Failed to stringify error object',
+        type: 'UNKNOWN_ERROR',
+        details: error
+      };
+    }
+  }
+
+  // Throw the structured error response
+  throw errorResponse;
+}
+
+// Helper function to safely handle errors in async functions
+export const tryCatch = async <T>(
+  promise: Promise<T>
+): Promise<[T | null, ErrorResponse | null]> => {
+  try {
+    const data = await promise;
+    return [data, null];
+  } catch (error) {
+    return [null, error instanceof Error ? handleError(error) : handleError('Unknown error occurred')];
+  }
+}
+

@@ -1,39 +1,31 @@
-import stripe from 'stripe'
-import { NextResponse } from 'next/server'
-import { createOrder } from '@/lib/actions/order.actions'
+// import { NextResponse } from 'next/server'
+// import { createOrder } from '@/lib/actions/order.actions'
 
-export async function POST(request: Request) {
-  const body = await request.text()
+// export async function POST(request: Request) {
+//   try {
+//     const { sessionId, eventId, buyerId, amount } = await request.json()
 
-  const sig = request.headers.get('stripe-signature') as string
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
+//     // Create order with payment details
+//     const order = {
+//       stripeId: sessionId,
+//       eventId: eventId,
+//       buyerId: buyerId,
+//       totalAmount: amount.toString(),
+//       createdAt: new Date(),
+//     }
 
-  let event
+//     const newOrder = await createOrder(order)
+//     return NextResponse.json({ 
+//       success: true, 
+//       message: 'Payment successful', 
+//       order: newOrder 
+//     })
 
-  try {
-    event = stripe.webhooks.constructEvent(body, sig, endpointSecret)
-  } catch (err) {
-    return NextResponse.json({ message: 'Webhook error', error: err })
-  }
-
-  // Get the ID and type
-  const eventType = event.type
-
-  // CREATE
-  if (eventType === 'checkout.session.completed') {
-    const { id, amount_total, metadata } = event.data.object
-
-    const order = {
-      stripeId: id,
-      eventId: metadata?.eventId || '',
-      buyerId: metadata?.buyerId || '',
-      totalAmount: amount_total ? (amount_total / 100).toString() : '0',
-      createdAt: new Date(),
-    }
-
-    const newOrder = await createOrder(order)
-    return NextResponse.json({ message: 'OK', order: newOrder })
-  }
-
-  return new Response('', { status: 200 })
-}
+//   } catch (error) {
+//     return NextResponse.json({ 
+//       success: false, 
+//       message: 'Error processing payment', 
+//       error: error 
+//     }, { status: 500 })
+//   }
+// }

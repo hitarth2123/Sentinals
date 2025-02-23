@@ -4,6 +4,7 @@ export type CreateUserParams = {
   firstName: string
   lastName: string
   username: string
+  phoneno: number
   email: string
   photo: string
 }
@@ -104,19 +105,9 @@ export type CreateCategoryParams = {
 }
 
 // ====== ORDER PARAMS
-export type CheckoutOrderParams = {
-  eventTitle: string
-  eventId: string
-  price: string
-  isFree: boolean
-  buyerId: string
-}
-
 export type CreateOrderParams = {
-  stripeId: string
   eventId: string
   buyerId: string
-  totalAmount: string
   createdAt: Date
 }
 

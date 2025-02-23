@@ -27,7 +27,8 @@ const CheckoutButton = ({ event }: { event: IEvent }) => {
           </SignedOut>
 
           <SignedIn>
-            <Checkout event={event} userId={userId} />
+            {/* <Checkout event={event} userId={userId} /> */}
+            <p className="p-2 text-green-400">You are signed in. Checkout is disabled.</p>
           </SignedIn>
         </>
       )}
