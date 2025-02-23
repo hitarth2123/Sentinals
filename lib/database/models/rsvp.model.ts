@@ -5,18 +5,31 @@ export interface IRSVP extends Document {
   event: {
     _id: string;
     title: string;
+    description: string;
   };
   user: {
     _id: string;
     username: string;
+    email: string;
   };
   createdAt: Date;
 }
 
 const RSVPSchema = new Schema({
-  event: { type: Schema.Types.ObjectId, ref: 'Event', required: true },
-  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  createdAt: { type: Date, default: Date.now },
+  event: {
+    type: Schema.Types.ObjectId,
+    ref: 'Event',
+    required: true
+  },
+  user: { // Fixed field name from 'users' to 'user' to match interface
+    type: Schema.Types.ObjectId,
+    ref: 'User', 
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 // Add a compound index to prevent duplicate RSVPs

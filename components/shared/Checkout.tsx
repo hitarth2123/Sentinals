@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 
 import { IEvent } from '@/lib/database/models/event.model';
 import { Button } from '../ui/button';
-import { checkoutOrder } from '@/lib/actions/order.actions';
+import { createRSVP } from '@/lib/actions/rsvp.actions';
 
 // loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -23,18 +23,22 @@ const Checkout = ({ event, userId }: { event: IEvent, userId: string }) => {
   }, []);
 
   const onCheckout = async () => {
-    // Change button text to "Waiting List" when clicked
-    setButtonText('Waiting List');
-
-    const order = {
-      eventTitle: event.title,
-      eventId: event._id,
-      price: event.price,
-      isFree: event.isFree,
-      buyerId: userId
+    try {
+      // Directly confirm seat for free events
+      if (event.isFree) {
+        setButtonText('Got the Seat');
+      } else {
+        // Change button text to "Waiting List" when clicked
+        setButtonText('Waiting List');
+        // Simulate order processing for paid events
+        setButtonText('Seat Secured');
+      }
+      // Call the RSVP action to store data in MongoDB
+      await createRSVP(event._id, userId);
+    } catch (error) {
+      console.error('Failed to create RSVP:', error);
+      setButtonText('Failed to Reserve');
     }
-
-    await checkoutOrder(order);
   }
 
   return (
